@@ -22,9 +22,10 @@ download_file() {
   fi
 }
 
-install_on_oracle_linux() {
-  local ol_major="$1"
-  local repo_url="https://pkgs.tailscale.com/stable/oracle/${ol_major}/tailscale.repo"
+install_on_rpm_linux() {
+  local repo_family="$1"
+  local rpm_major="$2"
+  local repo_url="https://pkgs.tailscale.com/stable/${repo_family}/${rpm_major}/tailscale.repo"
   local repo_file="/etc/yum.repos.d/tailscale.repo"
   local pkg_mgr=""
   local install_rc=0
@@ -130,7 +131,7 @@ install_on_ubuntu() {
 }
 
 echo "=========================================="
-echo " Tailscale Oracle Linux / Ubuntu Installer"
+echo " Tailscale Oracle Linux / CentOS / Ubuntu Installer"
 echo "=========================================="
 echo "默认/当前 tag: ${TAG}"
 echo "accept-dns: ${ACCEPT_DNS}"
@@ -154,16 +155,31 @@ OS_NAME="${PRETTY_NAME:-${NAME:-unknown}}"
 OS_VERSION="${VERSION_ID:-}"
 OS_MAJOR="${OS_VERSION%%.*}"
 UBUNTU_CODENAME="${VERSION_CODENAME:-${UBUNTU_CODENAME:-}}"
+RPM_REPO_FAMILY=""
 
 case "${OS_ID}" in
   ol|oracle|oraclelinux)
     case "${OS_MAJOR}" in
       7|8|9|10)
         DISTRO="oracle"
+        RPM_REPO_FAMILY="oracle"
         echo "检测到 Oracle Linux ${OS_MAJOR}"
         ;;
       *)
         echo "错误：当前脚本仅支持 Oracle Linux 7/8/9/10，检测到 VERSION_ID=${OS_VERSION}"
+        exit 1
+        ;;
+    esac
+    ;;
+  centos)
+    case "${OS_MAJOR}" in
+      7)
+        DISTRO="centos"
+        RPM_REPO_FAMILY="centos"
+        echo "检测到 CentOS ${OS_MAJOR}"
+        ;;
+      *)
+        echo "错误：当前脚本仅支持 CentOS 7，检测到 VERSION_ID=${OS_VERSION}"
         exit 1
         ;;
     esac
@@ -177,7 +193,7 @@ case "${OS_ID}" in
     echo "检测到 ${OS_NAME}，codename=${UBUNTU_CODENAME}"
     ;;
   *)
-    echo "错误：当前脚本仅支持 Oracle Linux 7/8/9/10 和 Ubuntu，检测到 ID=${OS_ID} VERSION_ID=${OS_VERSION}"
+    echo "错误：当前脚本仅支持 Oracle Linux 7/8/9/10、CentOS 7 和 Ubuntu，检测到 ID=${OS_ID} VERSION_ID=${OS_VERSION}"
     exit 1
     ;;
 esac
@@ -208,6 +224,9 @@ case "${DISTRO}" in
   oracle)
     echo "Oracle Linux: ${OS_MAJOR}"
     ;;
+  centos)
+    echo "CentOS: ${OS_MAJOR}"
+    ;;
   ubuntu)
     echo "Ubuntu: ${OS_VERSION} (${UBUNTU_CODENAME})"
     ;;
@@ -215,7 +234,7 @@ esac
 echo "Tailscale tag: ${TAG}"
 echo "Tailscale SSH: enabled"
 case "${DISTRO}" in
-  oracle)
+  oracle|centos)
     echo "Tailscale repo only install: yes"
     ;;
   ubuntu)
@@ -231,8 +250,8 @@ if [ "${CONFIRM}" != "y" ]; then
 fi
 
 case "${DISTRO}" in
-  oracle)
-    install_on_oracle_linux "${OS_MAJOR}"
+  oracle|centos)
+    install_on_rpm_linux "${RPM_REPO_FAMILY}" "${OS_MAJOR}"
     ;;
   ubuntu)
     install_on_ubuntu "${UBUNTU_CODENAME}"
