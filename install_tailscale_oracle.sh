@@ -173,13 +173,13 @@ case "${OS_ID}" in
     ;;
   centos)
     case "${OS_MAJOR}" in
-      7|8|9)
+      7|8|9|10)
         DISTRO="centos"
         RPM_REPO_FAMILY="centos"
         echo "检测到 CentOS ${OS_MAJOR}"
         ;;
       *)
-        echo "错误：当前脚本仅支持 CentOS 7/8/9，检测到 VERSION_ID=${OS_VERSION}"
+        echo "错误：当前脚本仅支持 CentOS 7/8/9/10，检测到 VERSION_ID=${OS_VERSION}"
         exit 1
         ;;
     esac
@@ -193,7 +193,7 @@ case "${OS_ID}" in
     echo "检测到 ${OS_NAME}，codename=${UBUNTU_CODENAME}"
     ;;
   *)
-    echo "错误：当前脚本仅支持 Oracle Linux 7/8/9/10、CentOS 7/8/9 和 Ubuntu，检测到 ID=${OS_ID} VERSION_ID=${OS_VERSION}"
+    echo "错误：当前脚本仅支持 Oracle Linux 7/8/9/10、CentOS 7/8/9/10 和 Ubuntu，检测到 ID=${OS_ID} VERSION_ID=${OS_VERSION}"
     exit 1
     ;;
 esac
